@@ -2981,6 +2981,8 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
 
                 // break 60 fps assumption if data from display appears valid
                 // NOTE: we only do this query once, statically, because it's very expensive (> 1ms)
+                // Use device max refresh rate (e.g. 144Hz) so GapWorker prefetch cadence matches
+                // the actual vsync interval rather than the current active refresh rate.
                 Display display = ViewCompat.getDisplay(this);
                 float refreshRate = 60.0f;
                 if (!isInEditMode() && display != null) {
@@ -2988,6 +2990,10 @@ public class RecyclerView extends ViewGroup implements ScrollingView,
                     if (displayRefreshRate >= 30.0f) {
                         refreshRate = displayRefreshRate;
                     }
+                }
+                // Prefer AndroidUtilities.screenMaxRefreshRate when it's higher (e.g. 144Hz panel)
+                if (AndroidUtilities.screenMaxRefreshRate > refreshRate) {
+                    refreshRate = AndroidUtilities.screenMaxRefreshRate;
                 }
                 mGapWorker.mFrameIntervalNs = (long) (1000000000 / refreshRate);
                 GapWorker.sGapWorker.set(mGapWorker);
