@@ -219,6 +219,10 @@ if [[ "$TARGET_ABI" != "all" ]]; then
     GRADLE_ARGS+=("-Pandroid.injected.build.abi=$TARGET_ABI")
 fi
 
+# 6. Clean stale APKs before building to ensure latest output is always picked
+rm -f TMessagesProj_App/build/outputs/apk/"$BUILD_TYPE"/*.apk 2>/dev/null || true
+rm -f TMessagesProj_App/build/intermediates/apk/"$BUILD_TYPE"/*.apk 2>/dev/null || true
+
 log_info "Building $BUILD_TYPE APK (ABI: $TARGET_ABI)..."
 ./gradlew "${GRADLE_ARGS[@]}"
 
@@ -229,19 +233,18 @@ CANDIDATE_PATHS=(
     "TMessagesProj_App/build/intermediates/apk/$BUILD_TYPE"
 )
 
-for search_dir in "${CANDIDATE_PATHS[@]}"; do
-    if [[ -d "$search_dir" ]]; then
-        if [[ "$TARGET_ABI" != "all" ]]; then
-            FOUND=$(find "$search_dir" -maxdepth 1 -name "*$TARGET_ABI*.apk" | head -n 1 || true)
-        else
-            FOUND=$(find "$search_dir" -maxdepth 1 -name "*.apk" | head -n 1 || true)
-        fi
-        if [[ -n "$FOUND" && -f "$FOUND" ]]; then
-            APK_PATH="$FOUND"
-            break
-        fi
-    fi
+EXISTING_DIRS=()
+for d in "${CANDIDATE_PATHS[@]}"; do
+    [[ -d "$d" ]] && EXISTING_DIRS+=("$d")
 done
+
+if [[ ${#EXISTING_DIRS[@]} -gt 0 ]]; then
+    if [[ "$TARGET_ABI" != "all" ]]; then
+        APK_PATH=$(find "${EXISTING_DIRS[@]}" -maxdepth 2 -type f -name "*$TARGET_ABI*.apk" -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -f2- -d" ")
+    else
+        APK_PATH=$(find "${EXISTING_DIRS[@]}" -maxdepth 2 -type f -name "*.apk" -printf '%T@ %p\n' 2>/dev/null | sort -n | tail -1 | cut -f2- -d" ")
+    fi
+fi
 
 if [[ -z "$APK_PATH" || ! -f "$APK_PATH" ]]; then
     log_err "Build finished, but could not locate output APK file!"
