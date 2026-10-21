@@ -27,14 +27,14 @@ public class AnalyticsHelper {
 
     private static FirebaseAnalytics firebaseAnalytics;
 
-    public static boolean sendBugReport = true;
-    public static boolean analyticsDisabled = false;
+    public static boolean sendBugReport = false;
+    public static boolean analyticsDisabled = true;
     public static String userId = null;
 
     public static void start(Application application) {
         preferences = application.getSharedPreferences("nekoanalytics", Application.MODE_PRIVATE);
-        analyticsDisabled = !Extra.FORCE_ANALYTICS && preferences.getBoolean("analyticsDisabled", false);
-        sendBugReport = Extra.FORCE_ANALYTICS || preferences.getBoolean("sendBugReport", true);
+        analyticsDisabled = !Extra.FORCE_ANALYTICS && preferences.getBoolean("analyticsDisabled", true);
+        sendBugReport = Extra.FORCE_ANALYTICS || preferences.getBoolean("sendBugReport", false);
         if (analyticsDisabled) {
             FileLog.d("Analytics: userId = disabled");
             return;
@@ -43,22 +43,27 @@ public class AnalyticsHelper {
         if (userId == null || userId.length() < 32) {
             preferences.edit().putString("userId", userId = generateUserID()).apply();
         }
-        firebaseAnalytics = FirebaseAnalytics.getInstance(application);
-        firebaseAnalytics.setAnalyticsCollectionEnabled(true);
-        firebaseAnalytics.setUserId(userId);
-        SentryAndroid.init(application, options -> {
-            options.setDsn(Extra.SENTRY_DSN);
-            options.setEnvironment(BuildConfig.BUILD_TYPE);
-            options.setPrintUncaughtStackTrace(true);
-            options.getDataCollection().forceDataCollection();
-            options.setEnableUserInteractionTracing(true);
-            options.setAttachViewHierarchy(true);
-            options.setEnableSystemEventBreadcrumbsExtras(true);
-            options.setTracesSampleRate(0.01);
-        });
-        var user = new User();
-        user.setId(userId);
-        Sentry.setUser(user);
+        try {
+            firebaseAnalytics = FirebaseAnalytics.getInstance(application);
+            firebaseAnalytics.setAnalyticsCollectionEnabled(true);
+            firebaseAnalytics.setUserId(userId);
+        } catch (Throwable ignore) {
+        }
+        if (Extra.SENTRY_DSN != null && !Extra.SENTRY_DSN.trim().isEmpty()) {
+            SentryAndroid.init(application, options -> {
+                options.setDsn(Extra.SENTRY_DSN);
+                options.setEnvironment(BuildConfig.BUILD_TYPE);
+                options.setPrintUncaughtStackTrace(true);
+                options.getDataCollection().forceDataCollection();
+                options.setEnableUserInteractionTracing(true);
+                options.setAttachViewHierarchy(true);
+                options.setEnableSystemEventBreadcrumbsExtras(true);
+                options.setTracesSampleRate(0.01);
+            });
+            var user = new User();
+            user.setId(userId);
+            Sentry.setUser(user);
+        }
 
         if (BuildVars.LOGS_ENABLED) {
             FileLog.d("Analytics: userId = " + userId);
@@ -104,7 +109,10 @@ public class AnalyticsHelper {
     public static void setAnalyticsDisabled() {
         AnalyticsHelper.analyticsDisabled = true;
         if (BuildConfig.DEBUG) return;
-        FirebaseAnalytics.getInstance(ApplicationLoader.applicationContext).setAnalyticsCollectionEnabled(false);
+        try {
+            FirebaseAnalytics.getInstance(ApplicationLoader.applicationContext).setAnalyticsCollectionEnabled(false);
+        } catch (Throwable ignore) {
+        }
         preferences.edit().putBoolean("analyticsDisabled", true).apply();
     }
 
