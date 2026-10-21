@@ -84,7 +84,7 @@ public class NekoConfig {
     public static boolean autoTranslate = true;
     public static boolean bottomFilterTabs = false;
     public static boolean confirmAVMessage = false;
-    public static boolean disableAppBarShadow = false;
+    public static boolean disableAppBarShadow = true;
     public static boolean disableGreetingSticker = false;
     public static boolean disableInstantCamera = false;
     public static boolean disableJumpToNextChannel = false;
@@ -110,7 +110,7 @@ public class NekoConfig {
     public static boolean markdownParseLinks = true;
     public static boolean mediaPreview = true;
     public static boolean minimizedStickerCreator = false;
-    public static boolean miniSenderAvatar = false;
+    public static boolean miniSenderAvatar = true;
     public static boolean newMarkdownParser = true;
     public static boolean openArchiveOnPull = false;
     public static boolean predictiveBackAnimation = true;
@@ -120,7 +120,7 @@ public class NekoConfig {
     public static boolean reducedColors = false;
     public static boolean shouldNOTTrustMe = false;
     public static boolean showAddToSavedMessages = true;
-    public static boolean showCopyPhoto = false;
+    public static boolean showCopyPhoto = true;
     public static boolean showDeleteDownloadedFile = false;
     public static boolean showMessageDetails = false;
     public static boolean showNoQuoteForward = false;
@@ -191,7 +191,7 @@ public class NekoConfig {
             autoTranslate = preferences.getBoolean("autoTranslate", true);
             bottomFilterTabs = preferences.getBoolean("bottomFilterTabs", false);
             confirmAVMessage = preferences.getBoolean("confirmAVMessage", false);
-            disableAppBarShadow = preferences.getBoolean("disableAppBarShadow", false);
+            disableAppBarShadow = preferences.getBoolean("disableAppBarShadow", true);
             disableGreetingSticker = preferences.getBoolean("disableGreetingSticker", false);
             disableInstantCamera = preferences.getBoolean("disableInstantCamera", false);
             disableJumpToNextChannel = preferences.getBoolean("disableJumpToNextChannel", false);
@@ -217,7 +217,7 @@ public class NekoConfig {
             markdownParseLinks = preferences.getBoolean("markdownParseLinks", true);
             mediaPreview = preferences.getBoolean("mediaPreview", true);
             minimizedStickerCreator = preferences.getBoolean("minimizedStickerCreator", false);
-            miniSenderAvatar = preferences.getBoolean("miniSenderAvatar", false);
+            miniSenderAvatar = preferences.getBoolean("miniSenderAvatar", true);
             newMarkdownParser = preferences.getBoolean("newMarkdownParser", true);
             openArchiveOnPull = preferences.getBoolean("openArchiveOnPull", false);
             predictiveBackAnimation = preferences.getBoolean("predictiveBackAnimation", true);
@@ -322,7 +322,7 @@ public class NekoConfig {
             object.addProperty("confirmAVMessage", preferences.getBoolean("confirmAVMessage", false));
         }
         if (preferences.contains("disableAppBarShadow")) {
-            object.addProperty("disableAppBarShadow", preferences.getBoolean("disableAppBarShadow", false));
+            object.addProperty("disableAppBarShadow", preferences.getBoolean("disableAppBarShadow", true));
         }
         if (preferences.contains("disableGreetingSticker")) {
             object.addProperty("disableGreetingSticker", preferences.getBoolean("disableGreetingSticker", false));
@@ -400,7 +400,7 @@ public class NekoConfig {
             object.addProperty("minimizedStickerCreator", preferences.getBoolean("minimizedStickerCreator", false));
         }
         if (preferences.contains("miniSenderAvatar")) {
-            object.addProperty("miniSenderAvatar", preferences.getBoolean("miniSenderAvatar", false));
+            object.addProperty("miniSenderAvatar", preferences.getBoolean("miniSenderAvatar", true));
         }
         if (preferences.contains("newMarkdownParser")) {
             object.addProperty("newMarkdownParser", preferences.getBoolean("newMarkdownParser", true));
