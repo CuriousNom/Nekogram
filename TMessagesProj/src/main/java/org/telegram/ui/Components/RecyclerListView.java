@@ -1475,6 +1475,9 @@ public class RecyclerListView extends RecyclerView implements IBlur3Capture {
         this.resourcesProvider = resourcesProvider;
         this.edgeEffectTrackerFactory = new EdgeEffectTrackerFactory();
 
+        // Increase off-screen view cache from 2 to 4 to reduce bind calls during fast flings
+        // at high refresh rates (144Hz). Extra memory cost is negligible for a messaging app.
+        setItemViewCacheSize(4);
         setEdgeEffectFactory(edgeEffectTrackerFactory);
         setGlowColor(getThemedColor(Theme.key_actionBarDefault));
         selectorDrawable = Theme.getSelectorDrawable(getThemedColor(Theme.key_listSelector), false);
