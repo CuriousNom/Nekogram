@@ -379,6 +379,15 @@ public class ApplicationLoader extends Application {
         NotificationCenter.sanitize();
     });
 
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        if (level >= TRIM_MEMORY_MODERATE) {
+            // Release image memory caches when the system asks us to free memory.
+            ImageLoader.getInstance().clearMemory();
+        }
+    }
+
     public static void startPushService() {
         SharedPreferences preferences = MessagesController.getGlobalNotificationsSettings();
         boolean enabled;
