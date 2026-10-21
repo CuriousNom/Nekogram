@@ -365,7 +365,9 @@ public class ApplicationLoader extends Application {
         AndroidUtilities.runOnUIThread(ApplicationLoader::startPushService);
         countDownLatch.countDown();
 
-        LauncherIconController.tryFixLauncherIconIfNeeded();
+        // LauncherIconController does multiple PackageManager binder calls; defer to bg thread
+        // so it doesn't block the main thread during cold start.
+        Utilities.globalQueue.postRunnable(LauncherIconController::tryFixLauncherIconIfNeeded);
         ProxyRotationController.init();
 
         //if (BuildConfig.DEBUG_PRIVATE_VERSION) {
