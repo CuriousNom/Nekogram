@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ "dev", "ci" ]
+    branches: [ "main", "dev", "ci" ]
     paths-ignore:
       - '**.md'
       - '.github/**'
@@ -12,7 +12,7 @@ on:
 
 jobs:
   build:
-    runs-on: blacksmith-32vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
       attestations: write
@@ -53,17 +53,18 @@ jobs:
           mkdir -p ~/.gradle
           echo 'org.gradle.caching=true' >> ~/.gradle/gradle.properties
           echo 'org.gradle.parallel=true' >> ~/.gradle/gradle.properties
-          echo 'org.gradle.jvmargs=-Xmx56g -Dfile.encoding=UTF-8 -XX:+UseParallelGC' >> ~/.gradle/gradle.properties
+          echo 'org.gradle.jvmargs=-Xmx8g -Dfile.encoding=UTF-8 -XX:+UseParallelGC' >> ~/.gradle/gradle.properties
           echo 'android.native.buildOutput=verbose' >> ~/.gradle/gradle.properties
 
       - name: Configure Signing
         run: |
-          echo "storeFile=${{ github.workspace }}/keystore.jks" >> local.properties
-          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> local.properties
-          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> local.properties
-          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> local.properties
-          
-          echo "${{ secrets.KEYSTORE_JKS }}" | base64 --decode > keystore.jks
+          if [ -n "${{ secrets.KEYSTORE_JKS }}" ]; then
+            echo "${{ secrets.KEYSTORE_JKS }}" | base64 --decode > keystore.jks
+            echo "storeFile=${{ github.workspace }}/keystore.jks" >> local.properties
+            echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> local.properties
+            echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> local.properties
+            echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> local.properties
+          fi
 
       - name: Configure Secrets
         run: |
@@ -74,17 +75,28 @@ jobs:
           echo "sentryDsn=${{ secrets.SENTRY_DSN }}" >> local.properties
           echo "mapsApiKey=${{ secrets.MAPS_API_KEY }}" >> local.properties
 
-          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode > TMessagesProj_App/google-services.json
-          echo "${{ secrets.SENTRY_PROPERTIES }}" | base64 --decode > sentry.properties
+          if [ -n "${{ secrets.GOOGLE_SERVICES_JSON }}" ]; then
+            echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 --decode > TMessagesProj_App/google-services.json
+          elif [ ! -f "TMessagesProj_App/google-services.json" ]; then
+            cat << 'EOF' > TMessagesProj_App/google-services.json
+          {
+            "project_info": { "project_number": "0", "project_id": "dummy" },
+            "client": [{ "client_info": { "mobilesdk_app_id": "1:0:android:0", "android_client_info": { "package_name": "tw.nekomimi.nekogram" } } }]
+          }
+          EOF
+          fi
+
+          if [ -n "${{ secrets.SENTRY_PROPERTIES }}" ]; then
+            echo "${{ secrets.SENTRY_PROPERTIES }}" | base64 --decode > sentry.properties
+          fi
 
       - name: Build with Gradle
         run: |
-          ./gradlew assembleRelease
-          ./gradlew bundlePlay
-          ./gradlew sentryUploadSourceBundlePlay
+          ./gradlew assembleRelease -x :TMessagesProj_App:sentryUploadSourceBundleRelease
 
       - name: Attest
         uses: actions/attest@v4
+        continue-on-error: true
         with:
           subject-path: '${{ github.workspace }}/TMessagesProj_App/build/outputs'
 
@@ -96,36 +108,35 @@ jobs:
 
       - name: Upload arm64-v8a build apk
         uses: actions/upload-artifact@v7
+        if: always()
         with:
           path: TMessagesProj_App/build/outputs/apk/release/*-arm64-v8a.apk
           archive: false
 
       - name: Upload armeabi-v7a build apk
         uses: actions/upload-artifact@v7
+        if: always()
         with:
           path: TMessagesProj_App/build/outputs/apk/release/*-armeabi-v7a.apk
           archive: false
 
       - name: Upload universal build apk
         uses: actions/upload-artifact@v7
+        if: always()
         with:
           path: TMessagesProj_App/build/outputs/apk/release/*-universal.apk
           archive: false
 
       - name: Upload x86 build apk
         uses: actions/upload-artifact@v7
+        if: always()
         with:
           path: TMessagesProj_App/build/outputs/apk/release/*-x86.apk
           archive: false
 
       - name: Upload x86_64 build apk
         uses: actions/upload-artifact@v7
+        if: always()
         with:
           path: TMessagesProj_App/build/outputs/apk/release/*-x86_64.apk
-          archive: false
-
-      - name: Upload build bundle
-        uses: actions/upload-artifact@v7
-        with:
-          path: TMessagesProj_App/build/outputs/bundle/play/*-play.aab
           archive: false
