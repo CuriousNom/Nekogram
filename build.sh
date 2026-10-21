@@ -131,13 +131,23 @@ fi
 # 3. Setup local.properties if missing
 ensure_local_properties() {
     local target_file="$1"
+    local default_api_id="${API_ID:-4}"
+    local default_api_hash="${API_HASH:-014b35b6184100b085b0d0572f9b5103}"
+
     if [[ ! -f "$target_file" ]]; then
         log_info "Creating $(basename "$target_file")..."
         cat <<EOF > "$target_file"
 sdk.dir=$ANDROID_HOME
-apiId=4
-apiHash=014b35b6184100b085b0d0572f9b5103
+apiId=$default_api_id
+apiHash=$default_api_hash
 EOF
+    else
+        if [[ -n "${API_ID:-}" ]]; then
+            sed -i "s|^apiId=.*|apiId=$API_ID|" "$target_file"
+        fi
+        if [[ -n "${API_HASH:-}" ]]; then
+            sed -i "s|^apiHash=.*|apiHash=$API_HASH|" "$target_file"
+        fi
     fi
 }
 ensure_local_properties "$SCRIPT_DIR/local.properties"
