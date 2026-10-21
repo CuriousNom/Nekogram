@@ -865,6 +865,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         //    refreshRateController = new RefreshRateController(this);
         //}
+        AndroidUtilities.setPreferredMaxRefreshRate(getWindow());
         checkFrameMetrics();
     }
 
@@ -6962,6 +6963,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     @Override
     protected void onResume() {
         super.onResume();
+        AndroidUtilities.setPreferredMaxRefreshRate(getWindow());
         isResumed = true;
         pipActivityHandler.onResume();
         if (onResumeStaticCallback != null) {

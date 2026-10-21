@@ -2855,12 +2855,29 @@ public class AndroidUtilities {
 
     public static void setPreferredMaxRefreshRate(Window window, float rate) {
         if (window == null) return;
-        final WindowManager wm = window.getWindowManager();
-        if (wm == null) return;
         WindowManager.LayoutParams params = window.getAttributes();
         params.preferredRefreshRate = rate;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                WindowManager wm = window.getWindowManager();
+                Display display = wm != null ? wm.getDefaultDisplay() : null;
+                if (display != null) {
+                    Display.Mode[] modes = display.getSupportedModes();
+                    Display.Mode bestMode = null;
+                    for (Display.Mode mode : modes) {
+                        if (bestMode == null || mode.getRefreshRate() > bestMode.getRefreshRate()) {
+                            bestMode = mode;
+                        }
+                    }
+                    if (bestMode != null && bestMode.getRefreshRate() >= rate - 1.0f) {
+                        params.preferredDisplayModeId = bestMode.getModeId();
+                    }
+                }
+            } catch (Throwable ignore) {
+            }
+        }
         try {
-            wm.updateViewLayout(window.getDecorView(), params);
+            window.setAttributes(params);
         } catch (Exception e) {
             FileLog.e(e);
         }
