@@ -77,3 +77,9 @@
 
 -dontwarn android.support.annotation.*
 -dontwarn androidx.compose.**
+
+# Cronet and Play Services Net
+-keep class org.chromium.net.** { *; }
+-keep class com.google.android.gms.net.** { *; }
+-dontwarn org.chromium.net.**
+-dontwarn com.google.android.gms.net.**
