@@ -66,7 +66,7 @@ public class NekoConfig {
     public static int cameraInVideoMessages = CAMERA_FRONT;
     public static int doubleTapInAction = DOUBLE_TAP_ACTION_REACTION;
     public static int doubleTapOutAction = DOUBLE_TAP_ACTION_REACTION;
-    public static int downloadSpeedBoost = BOOST_NONE;
+    public static int downloadSpeedBoost = BOOST_AVERAGE;
     public static int idType = ID_TYPE_API;
     public static int maxRecentStickers = 20;
     public static int nameOrder = 1;
@@ -175,7 +175,7 @@ public class NekoConfig {
             cameraInVideoMessages = preferences.getInt("cameraInVideoMessages", CAMERA_FRONT);
             doubleTapInAction = preferences.getInt("doubleTapAction", DOUBLE_TAP_ACTION_REACTION);
             doubleTapOutAction = preferences.getInt("doubleTapOutAction", DOUBLE_TAP_ACTION_REACTION);
-            downloadSpeedBoost = preferences.getInt("downloadSpeedBoost2", BOOST_NONE);
+            downloadSpeedBoost = preferences.getInt("downloadSpeedBoost2", BOOST_AVERAGE);
             idType = preferences.getInt("idType", ID_TYPE_API);
             maxRecentStickers = preferences.getInt("maxRecentStickers", 20);
             nameOrder = preferences.getInt("nameOrder", 1);
@@ -274,7 +274,7 @@ public class NekoConfig {
             object.addProperty("doubleTapOutAction", preferences.getInt("doubleTapOutAction", DOUBLE_TAP_ACTION_REACTION));
         }
         if (preferences.contains("downloadSpeedBoost2")) {
-            object.addProperty("downloadSpeedBoost2", preferences.getInt("downloadSpeedBoost2", BOOST_NONE));
+            object.addProperty("downloadSpeedBoost2", preferences.getInt("downloadSpeedBoost2", BOOST_AVERAGE));
         }
         if (preferences.contains("idType")) {
             object.addProperty("idType", preferences.getInt("idType", ID_TYPE_API));
